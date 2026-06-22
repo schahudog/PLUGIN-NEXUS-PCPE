@@ -208,7 +208,7 @@ Os brasões são configuráveis por unidade. Após a instalação, substitua os 
 
 ---
 
-## Documentos Gerados
+## Documentos Gerados - 19+ habilidades disponíveis no Plugin NEXUS·PCPE
 
 | Documento | Agente Responsável | Formato |
 |-----------|-------------------|---------|
