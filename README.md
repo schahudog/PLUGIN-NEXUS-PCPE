@@ -2,7 +2,7 @@
 
 Plugin oficial de investigação policial da **Polícia Civil do Estado de Pernambuco**, com arquitetura de agentes especializados para produção de peças policiais em conformidade com os padrões institucionais da PCPE.
 
-**Versão:** 1.4.8
+**Versão:** 1.5.1
 **Autor:** Lukas Furtado — PCPE
 
 **Créditos originais:** Equipe DataVirtus, Prof. Jonas Tomaz
@@ -208,7 +208,7 @@ Os brasões são configuráveis por unidade. Após a instalação, substitua os 
 
 ---
 
-## Documentos Gerados
+## Documentos Gerados - 19+ habilidades disponíveis no Plugin NEXUS·PCPE
 
 | Documento | Agente Responsável | Formato |
 |-----------|-------------------|---------|
@@ -229,6 +229,7 @@ Os brasões são configuráveis por unidade. Após a instalação, substitua os 
 | Laudo Técnico | Perito | .docx |
 | Laudo de Auditoria de Peça | Revisor | Chat (laudo + correções para colar) |
 | Ordem de serviço | Delegado | .docx |
+| Nexus Skill Creator | Especial | .skill |
 ---
 
 ## Fluxo de Análise Completa ("Analisa Tudo")
@@ -281,7 +282,3 @@ Créditos pela estrutura original do plugin:
 - Equipe DataVirtus — contato@datavirtus.com.br
 - Prof. Jonas Tomaz
 
----
-
-**Última atualização:** 21 de junho de 2026
-**Versão:** 1.4.8
