@@ -8,7 +8,9 @@ Plugin oficial de investigação policial da **Polícia Civil do Estado de Perna
 **Créditos originais:** Equipe DataVirtus, Prof. Jonas Tomaz
 
 **Licença:** Uso interno — Polícia Civil do Estado de Pernambuco
+
 **Colaboradores:**
+
 Delegado de Polícia Gregório Lucas
 
 Delegado de Polícia Dark Blacker
