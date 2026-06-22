@@ -1,6 +1,6 @@
 # NEXUS·PCPE
 
-Plugin oficial de investigação policial da **Polícia Civil do Estado de Pernambuco**, com arquitetura de agentes especializados para produção de peças policiais em conformidade com os padrões institucionais da PCPE.
+Plugin para uso institucional de investigação policial da **Polícia Civil do Estado de Pernambuco**, com arquitetura de agentes especializados para produção de peças policiais em conformidade com os padrões institucionais da PCPE.
 
 **Versão:** 1.5.1
 **Autor:** Lukas Furtado — PCPE
