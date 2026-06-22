@@ -1,0 +1,328 @@
+# CHANGELOG — DELEGACIA PCPE
+### Polícia Civil do Estado de Pernambuco
+**Autor das adaptações:** Lukas Furtado — PCPE  
+**Créditos da base original:** Equipe DataVirtus, Prof. Jonas Tomaz
+
+---
+
+## [1.5.1] — 22/06/2026 — Correção da Skill `nexus-skill-creator`: Injeção Obrigatória no Plugin
+
+### Motivação
+A versão 1.5.0 da skill `nexus-skill-creator` estava incompleta: ao criar uma nova skill, ela a
+empacotava como arquivo `.skill` isolado, entregando-a apartada do plugin. O comportamento correto
+é injetar a nova skill diretamente no NEXUS e entregar um `nexus-pcpe.plugin` atualizado e
+pronto para reinstalação — sem exigir etapa manual adicional do usuário.
+
+Adicionalmente, o caminho do plugin NEXUS estava hardcoded com IDs de sessão e de plugin da sessão
+de criação, tornando a skill inutilizável em sessões subsequentes.
+
+### Bugs Corrigidos
+
+#### Bug 1 — Entrega de `.skill` isolado em vez de `.plugin` atualizado (`nexus-skill-creator/SKILL.md`, Seção 8)
+- **Causa raiz:** A Seção 8 instruía empacotar a nova skill como `.skill` (zip renomeado) e
+  entregá-la ao usuário sem injetar no plugin NEXUS.
+- **Correção:** Seção 8 reescrita integralmente como **"Injeção no NEXUS (Fase Obrigatória)"**.
+  O fluxo agora: (1) localiza o plugin NEXUS instalado, (2) copia para `/tmp`, (3) injeta a skill,
+  (4) incrementa versão patch, (5) empacota como `nexus-pcpe.plugin`, (6) entrega ao Lukas.
+- **Impacto:** Toda skill criada via `nexus-skill-creator` é entregue já integrada ao plugin,
+  pronta para reinstalação imediata — sem arquivo `.skill` orphan.
+
+#### Bug 2 — Path do plugin NEXUS hardcoded com IDs de sessão (`nexus-skill-creator/SKILL.md`, Seção 8)
+- **Causa raiz:** Os comandos bash usavam caminhos literais com IDs de sessão e de plugin
+  (`/sessions/lucid-beautiful-cerf/...`, `plugin_01UkBA1Lp6w8TiZU8g2BveMw`) que mudam a cada
+  sessão do Cowork.
+- **Correção:** Substituído por descoberta dinâmica via busca no `plugin.json`:
+  ```bash
+  NEXUS_SRC=$(find /sessions/ -name "plugin.json" 2>/dev/null \
+    | xargs grep -l '"nexus-pcpe"' 2>/dev/null \
+    | head -1 \
+    | sed 's|/.claude-plugin/plugin.json||')
+  OUTPUTS=$(find /sessions/ -maxdepth 5 -name "outputs" -type d 2>/dev/null | head -1)
+  ```
+- **Impacto:** A skill funciona corretamente em qualquer sessão futura, independente de IDs gerados.
+
+### Arquivos Modificados
+- `skills/nexus-skill-creator/SKILL.md` — Seção 6 (Fase 5 renomeada) e Seção 8 reescrita; versão 1.0.0 → 1.1.0
+- `.claude-plugin/plugin.json` — versão 1.5.0 → 1.5.1
+- `CHANGELOG.md` *(este arquivo)*
+
+---
+
+## [1.5.0] — 22/06/2026 — Nova Skill: `nexus-skill-creator`
+
+### Motivação
+O NEXUS não possuía um mecanismo interno para criar novas habilidades específicas ao contexto
+policial. A criação de skills dependia de ferramentas genéricas (skill-creator da Anthropic) que
+não conhecem os padrões institucionais do plugin: clonagem BytesIO, estilos Heading 1/2 nativos
+para Google Docs, modelos .docx com brasões, guardrails anti-alucinação policiais, ou a taxonomia
+de agentes (Delegado, Escrivão, Investigador, Perito, Revisor).
+
+### Nova Funcionalidade
+
+#### `nexus-skill-creator` — Ateliê de construção do NEXUS
+Skill especializada em criar novas habilidades para o plugin, com conhecimento completo dos padrões
+institucionais. Aciona-se quando o usuário pedir para criar uma skill para uma demanda recorrente,
+complexa ou especializada que não existe ainda no NEXUS.
+
+**Protocolo de entrevista estruturado em 3 blocos:**
+- Bloco A — O que a skill faz (nome, entradas, output, estrutura)
+- Bloco B — Contexto investigativo (crime, sistemas, base normativa, guardrails especiais)
+- Bloco C — Integração com o NEXUS (agente natural, conflitos com skills existentes)
+
+**Taxonomia de classificação de skills por tipo:**
+
+| Tipo | Produz | Modelo base | Agente natural |
+|------|--------|-------------|----------------|
+| Peça Cartorária | .docx | modelo_raf.docx | Escrivão |
+| Análise Investigativa | texto ou .docx | modelo_raf.docx | Investigador / Perito |
+| Produto de Inteligência | texto estruturado | — | Perito |
+| Diagnóstico | análise + recomendação | — | Delegado |
+| Análise de Dados | texto + tabelas | modelo_raf.docx | Perito |
+| Peça Cautelar | .docx | modelo_raf.docx | Delegado |
+
+**Padrões obrigatórios embutidos** — a skill conhece e aplica automaticamente:
+- Clonagem BytesIO (sem `shutil.copy2`)
+- Heading 1/2 nativos com spacing e keepNext/keepLines desabilitados
+- Bordas de tabela via XML (sem `Table Grid`)
+- Guardrails anti-alucinação policiais
+- Bloco de assinatura centralizado
+
+### Arquivos Adicionados
+- `skills/nexus-skill-creator/SKILL.md` *(adicionado)* — Protocolo de entrevista, arquitetura, padrões obrigatórios, fluxo de criação e guia de escrita; versão 1.0.0
+- `skills/nexus-skill-creator/references/padroes_docx_nexus.md` *(adicionado)* — Blocos de código python-docx prontos: BytesIO, Heading 1/2, tabelas com bordas, bloco assinatura, checklist de validação
+- `skills/nexus-skill-creator/references/anatomia_skill_nexus.md` *(adicionado)* — Template anotado de SKILL.md completo + checklist de qualidade + tabela de erros comuns
+- `skills/nexus-skill-creator/resources/modelo_raf.docx` *(adicionado)* — Modelo institucional padrão (copiado de `analise-rif/resources/`)
+- `skills/nexus-skill-creator/resources/brasao_pcpe.png` *(adicionado)*
+- `skills/nexus-skill-creator/resources/brasao_pe_estado.png` *(adicionado)*
+- `.claude-plugin/plugin.json` — versão 1.4.8 → 1.5.0
+- `CHANGELOG.md` *(este arquivo)*
+
+---
+
+
+## [1.4.8] — 22/06/2026 — Correção Crítica do Gerador de RAF e Atualização do Modelo Institucional
+
+### Motivação
+A skill `analise-rif` falhava com `PermissionError` ao gerar o RAF em qualquer instalação limpa do plugin.
+O arquivo `resources/modelo_raf.docx` é armazenado com permissão somente leitura (`-r-x------`) pelo
+instalador do Cowork. O código anterior usava `shutil.copy2(modelo, destino)`, que copia as permissões
+da fonte para o destino — tornando o arquivo de saída também read-only. Quando `python-docx` tentava
+salvar (`doc.save(output_path)`), o `ZipFile` abria em modo escrita e disparava `PermissionError`.
+
+Adicionalmente, o modelo `modelo_raf.docx` anterior não era o modelo institucional definitivo
+(sem brasões visíveis). O usuário forneceu o modelo correto com cabeçalho completo (brasões PCPE +
+brasão PE + marca d'água), que foi incorporado ao plugin.
+
+### Bugs Corrigidos
+
+#### Bug 1 — `PermissionError` ao salvar RAF (`analise-rif/SKILL.md`, seção 2.3)
+- **Causa raiz:** `shutil.copy2(modelo_path, output_path)` → arquivo destino herda `-r-x------`
+  → `Document(output_path)` abre OK (leitura) → `doc.save(output_path)` falha (ZipFile 'w' mode)
+- **Correção:** Substituído por padrão BytesIO seguro:
+  ```python
+  import io
+  with open(modelo_path, 'rb') as f:
+      src_bytes = f.read()
+  doc = Document(io.BytesIO(src_bytes))   # modelo em memória — sem tocar permissões
+  # ... modificar conteúdo ...
+  buf = io.BytesIO()
+  doc.save(buf)
+  buf.seek(0)
+  with open(output_path, 'wb') as f:      # grava binário com permissão padrão do processo
+      f.write(buf.read())
+  ```
+- **Impacto:** Eliminado definitivamente; funciona em qualquer instalação independente de permissões.
+
+#### Bug 2 — `KeyError: "no style with name 'Table Grid'"` (`analise-rif/SKILL.md`, seção 2.3)
+- **Causa raiz:** O `modelo_raf.docx` não contém o estilo `Table Grid` — apenas `Normal Table` e
+  `TableNormal`. Código anterior usava `tbl.style = 'Table Grid'` causando `KeyError` e abortando
+  toda a geração.
+- **Correção:** Adicionado helper `adicionar_bordas_tabela()` que injeta bordas via XML direto
+  (`w:tblBorders`), sem depender de estilo nomeado.
+- **Nota:** Adicionada diretiva `⚠️ CRÍTICO` no SKILL.md proibindo `tbl.style = 'Table Grid'`.
+
+### Atualização de Recurso
+
+#### `analise-rif/resources/modelo_raf.docx` — Substituição pelo modelo institucional definitivo
+- **Antes:** Modelo anterior sem brasões visíveis no cabeçalho
+- **Agora:** Modelo institucional definitivo fornecido pelo usuário, contendo:
+  - Brasão PCPE (esquerda)
+  - Brasão do Estado de Pernambuco (direita)
+  - Marca d'água institucional (behind text)
+  - Estilos nativos `Heading 1` e `Heading 2` para navegação no Google Docs
+
+### Arquivos Modificados
+- `skills/analise-rif/SKILL.md` — Seção 2.3 reescrita (BytesIO + bordas XML); versão 2.0.0 → 2.1.0
+- `skills/analise-rif/resources/modelo_raf.docx` — Substituído pelo modelo institucional definitivo
+- `.claude-plugin/plugin.json` — versão 1.4.7 → 1.4.8
+- `CHANGELOG.md` *(este arquivo)*
+
+---
+
+## [1.4.7] — 21/06/2026 — Injeção de Modelo Padrão em Skills sem Template
+
+### Motivação
+Quatro skills geravam documentos `.docx` via geração programática (python-docx puro) por ausência
+de arquivo modelo `.docx` em seus `resources/`. O resultado era perda do cabeçalho institucional
+(brasões + marca d'água) e inconsistência de formatação em relação às demais peças.
+
+### Solução Implementada
+Injetado o documento modelo padrão — derivado do `DEMO_CS_NARRATIVA_2026-042` com formatação
+institucional validada — como template de clonagem em cada skill afetada.
+
+### Skills Corrigidas
+
+#### `auto-prisao-flagrante`
+- **Antes:** Fallback para geração programática sem cabeçalho institucional
+- **Agora:** Clona `resources/modelo_auto_flagrante.docx` — preserva brasões e marca d'água
+- **Arquivo adicionado:** `skills/auto-prisao-flagrante/resources/modelo_auto_flagrante.docx`
+
+#### `carta-precatoria`
+- **Antes:** Fallback para geração programática sem cabeçalho institucional
+- **Agora:** Clona `resources/modelo_precatoria.docx` — preserva brasões e marca d'água
+- **Arquivo adicionado:** `skills/carta-precatoria/resources/modelo_precatoria.docx`
+
+#### `oitivas`
+- **Antes:** Fallback para geração programática sem cabeçalho institucional
+- **Agora:** Clona `resources/modelo_oitiva.docx` — preserva brasões e marca d'água
+- **Arquivo adicionado:** `skills/oitivas/resources/modelo_oitiva.docx`
+
+#### `laudo-tecnico`
+- **Antes:** Sem pasta `resources/`; fallback para geração programática
+- **Agora:** Pasta `resources/` criada; clona `modelo_laudo_tecnico.docx`
+- **Arquivos adicionados:** `skills/laudo-tecnico/resources/modelo_laudo_tecnico.docx`, `brasao_pcpe.png`, `brasao_pe_estado.png`
+
+### Padrão de Formatação do Modelo Injetado
+| Parâmetro | Valor |
+|---|---|
+| Página | A4 (21,0 × 29,7 cm) |
+| Margens | 2,54 cm (todas) |
+| Fonte padrão | Arial |
+| Corpo do texto | 12pt, justificado, espaçamento exato 18pt (360 twips), recuo 1,27 cm |
+| Cabeçalho (1ª pág.) | 3 imagens: brasão PCPE (esq.), brasão PE (dir.), marca d'água |
+| Cabeçalho (pág. 2+) | 1 imagem: marca d'água centralizada |
+
+### Arquivos Modificados
+- `skills/auto-prisao-flagrante/resources/modelo_auto_flagrante.docx` *(adicionado)*
+- `skills/carta-precatoria/resources/modelo_precatoria.docx` *(adicionado)*
+- `skills/oitivas/resources/modelo_oitiva.docx` *(adicionado)*
+- `skills/laudo-tecnico/resources/` *(pasta criada)*
+- `skills/laudo-tecnico/resources/modelo_laudo_tecnico.docx` *(adicionado)*
+- `skills/laudo-tecnico/resources/brasao_pcpe.png` *(adicionado)*
+- `skills/laudo-tecnico/resources/brasao_pe_estado.png` *(adicionado)*
+- `.claude-plugin/plugin.json` (versão 1.3.0 → 1.4.7)
+- `CHANGELOG.md` *(este arquivo)*
+
+---
+
+## [1.3.0] — 21/06/2026 — Correção de Bugs na Geração de Documentos .docx
+
+### Bugs Corrigidos
+
+#### Bug 1 — Limpeza do body com iteração direta (`comunicacao-servico/references/codigo_geracao.md`)
+- **Problema:** `gerar_cs_estruturada()` iterava diretamente sobre `doc.paragraphs` e `doc.tables`
+  enquanto removia elementos (`p._element.getparent().remove(...)`). Em Python, modificar uma lista
+  durante a iteração provoca saltos silenciosos — elementos do modelo vazavam para o documento final.
+- **Correção:** Substituído por iteração sobre lista congelada via `list(body)` e remoção direta
+  dos nós filhos do `body`, incluindo `sdt` (structured document tags).
+
+#### Bug 2 — Limpeza do body com iteração direta (`comunicacao-servico/references/codigo_geracao_narrativa.md`)
+- **Problema:** Mesmo padrão do Bug 1 em `gerar_cs_narrativa()`.
+- **Correção:** Idêntica ao Bug 1.
+
+#### Bug 3 — Estilo `'Table Grid'` inexistente no modelo (`relatorio-final/SKILL.md`)
+- **Problema:** A instrução `tbl.style = 'Table Grid'` causava `KeyError` e abortava toda geração
+  do RFIP. O arquivo `modelo_relatorio_final.docx` contém apenas os estilos `'Normal Table'`
+  e `'TableNormal'`.
+- **Correção:** Removida a atribuição de estilo por nome. Adicionada nota `⚠ ATENÇÃO` na seção 3.4
+  do SKILL.md proibindo uso de `tbl.style` e determinando bordas via `set_cell_borders()` (XML direto).
+
+#### Bug 4 — Clone via `shutil.copy2` para o arquivo de destino (`portaria-ip/SKILL.md`, ambos os arquivos de código)
+- **Problema:** O fluxo `shutil.copy2(modelo, dest) → Document(dest) → doc.save(dest)` falha com
+  `PermissionError` quando o arquivo de destino já existe e está travado por outro processo
+  (segunda execução, sincronização OneDrive, antivírus).
+- **Correção:** Substituído por carregamento do modelo em memória via `io.BytesIO`:
+  ```python
+  import io
+  with open(modelo_path, 'rb') as f:
+      buf = io.BytesIO(f.read())
+  doc = Document(buf)
+  # ... modificar ...
+  doc.save(output_path)  # grava direto no destino sem conflito
+  ```
+
+### Arquivos Modificados
+- `skills/comunicacao-servico/references/codigo_geracao.md`
+- `skills/comunicacao-servico/references/codigo_geracao_narrativa.md`
+- `skills/relatorio-final/SKILL.md`
+- `skills/portaria-ip/SKILL.md`
+- `.claude-plugin/plugin.json` (versão 1.2.7 → 1.3.0)
+- `CHANGELOG.md` (este arquivo adicionado ao pacote)
+
+---
+
+## [1.2.7] — Atualização Legislativa e Aprimoramentos Operacionais
+
+### Referências Jurídicas
+- Adicionados à `tipificacao_especial.md`: Art. 147-A/CP (stalking/perseguição, Lei 14.132/2021), Art. 215-A/CP (importunação sexual, Lei 13.718/2018), Art. 216-B/CP (registro não autorizado da intimidade sexual, Lei 13.772/2018), Art. 218-C/CP (divulgação de cena de sexo/pornografia sem consentimento, Lei 13.718/2018)
+- Adicionada seção "Crimes contra a Honra com Regime Especial": injúria racial equiparada ao racismo pela Lei 14.532/2023 — imprescritível e inafiançável; tabela comparativa regime anterior vs. atual
+- Adicionada tabela de concurso de crimes (material, formal próprio, formal impróprio, crime continuado) com impacto na prescrição
+- Adicionada linha de tentativa (Art. 14, II/CP) ao rol de causas de aumento/redução
+- Adicionado filtro de encaminhamento JECRIM vs. IP com regra de bolso (pena máxima ≤ 2 anos → TCO)
+- Adicionada tabela completa do ANPP (Art. 28-A/CPP): requisitos cumulativos, vedações expressas e consequências do descumprimento
+- Adicionada seção completa do Marco Civil da Internet (Lei 12.965/2014): tabela de dados requisitáveis por autoridade policial sem ordem judicial (Art. 10, §3º) vs. com ordem judicial, prazos de retenção de logs (12 meses ISP / 6 meses aplicações), implicações práticas para ofícios e plataformas estrangeiras
+- Adicionada à `legislacao_penal.md`: seção detalhada da Lei 14.532/2023 com consequências processuais e regra de direito intertemporal para fatos anteriores à vigência
+- Adicionada seção de crimes digitais contra a dignidade sexual com vigências (Leis 13.718/2018 e 13.772/2018)
+- Adicionada seção de concurso de crimes com tabela de impacto na prescrição
+- Adicionada seção de infrações de menor potencial ofensivo (Lei 9.099/95)
+- **Correção:** referência incorreta a "Art. 171-A, CP — Fraude em Comércio Eletrônico" removida; substituída por nota explicativa apontando que a Lei 14.155/2021 inseriu o §2º-A no Art. 171, sem criar artigo autônomo
+
+### Autonomia das Referências
+- Inserida "Diretiva de Uso Autônomo" no topo de ambos os arquivos de referência, instruindo o plugin a: identificar lacunas, aplicar princípios gerais do CP diretamente ao texto legal, rastrear conexões não óbvias (crime financeiro → verificar lavagem; crime digital → verificar Marco Civil), nunca omitir gaps e incorporar atualizações informadas pelo usuário
+
+### Documentação Operacional
+- Nomenclatura atualizada: CS (Comunicação de Serviço) → **Parte de Serviço**
+- Adicionado novo documento: **Ordem de Serviço**
+
+### Empacotamento
+- Corrigida estrutura do arquivo `.plugin`: removido prefixo `delegacia-pcpe/` das entradas do zip; estrutura agora plana (`.claude-plugin/`, `skills/`, `agents/`, etc. diretamente na raiz), compatível com o instalador do Cowork
+
+---
+
+## [1.1.5] — Profissionalização Institucional da Linguagem
+
+### Agentes
+- Removidas todas as referências "educacional", "didático", "clone", "demo" dos 5 arquivos de agente (delegado.md, escrivao.md, investigador.md, perito.md, revisor.md)
+- Substituída expressão "da Delegacia Virtus" por "da Polícia Civil de Pernambuco" em todos os agentes
+- Removido bloco de disclaimer do revisor.md: *"Delegacia Virtus — ambiente didático. Todas as peças, autos, nomes, CPFs e dados auditados são fictícios e simulados, usados como exemplo em aula. O laudo de auditoria também é material didático."*
+- Referência residual "na Delegacia Virtus" (contexto de exemplo) substituída por "na PCPE"
+
+### README
+- Reescrito integralmente o README.md em tom institucional PCPE
+- Removidas todas as expressões de prototipagem, demonstração ou finalidade educacional
+- Linguagem adaptada para ferramenta de uso profissional operacional
+
+---
+
+## [1.1.0] — Identidade Institucional PCPE
+
+### Plugin
+- Renomeado de "Delegacia Virtus" para **DELEGACIA - PCPE** (`delegacia-pcpe`)
+- Autoria atualizada para: "Lukas Furtado - PCPE"
+- Créditos inseridos na descrição: equipe DataVirtus e Prof. Jonas Tomaz
+- Versão atualizada para 1.1.0; descrição limitada a 500 caracteres (restrição do validador)
+
+### Cabeçalho Institucional
+- Substituído cabeçalho genérico de linha única por formato de 3 linhas centralizado:
+  ```
+  POLÍCIA CIVIL DE PERNAMBUCO
+  DIRETORIA [X] — [SIGLA]
+  [Nº]ª DELEGACIA DE POLÍCIA DE [X] — [SIGLA]
+  ```
+- Layout de cabeçalho atualizado de 2 para 3 colunas: `brasão PCPE | texto centralizado | brasão PE Estado`
+- Especificações atualizadas em `header_specs.md` e `contexto_institucional.md`
+
+### Brasões e Identidade Visual
+- Arquivo `brasao_pcpe.png` distribuído para todos os `resources/` das 9 skills geradoras de documentos
+- Arquivo `brasao_pe_estado.png` extraído do modelo `relatorio-final` e distribuído para todos os `resources/`
+- Nomea
