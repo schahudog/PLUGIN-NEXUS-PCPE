@@ -1,5 +1,5 @@
 NEXUS·PCPE
-Plugin oficial de Inteligência Artificial Investigativa, Pericial e Administrativa da Polícia Civil do Estado de Pernambuco, desenvolvido para o ecossistema Claude + Cowork. Implementa uma arquitetura de 5 agentes especializados e 18 habilidades para produção de peças policiais em conformidade com os padrões institucionais da PCPE e com a Portaria Normativa DG/PCPE Nº 29/2026 — PIGIA.
+Plugin institucional de Inteligência Artificial Investigativa, Pericial e Administrativa da Polícia Civil do Estado de Pernambuco, desenvolvido para o ecossistema Claude + Cowork. Implementa uma arquitetura de 5 agentes especializados e 18 habilidades para produção de peças policiais em conformidade com os padrões institucionais da PCPE e com a Portaria Normativa DG/PCPE Nº 29/2026 — PIGIA.
 
 
 Versão: 1.2.7
