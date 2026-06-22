@@ -1,4 +1,4 @@
-# CHANGELOG — DELEGACIA PCPE
+# CHANGELOG — NEXUS PCPE
 ### Polícia Civil do Estado de Pernambuco
 **Autor das adaptações:** Lukas Furtado — PCPE  
 **Créditos da base original:** Equipe DataVirtus, Prof. Jonas Tomaz
