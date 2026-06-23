@@ -4198,6 +4198,16 @@ const navObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.3 });
 sections.forEach(s => navObserver.observe(s));
+
+// Fix srcdoc iframe anchor navigation — prevent parent history push
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const id = this.getAttribute('href').replace('#', '');
+    const target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
 </script>
 </body>
 </html>" title="Portaria Normativa DG/PCPE Nº 29/2026"></iframe>
